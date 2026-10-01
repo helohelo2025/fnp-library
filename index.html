@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FNP出版ライブラリ</title>
+<meta name="description" content="FNP出版の既刊12冊を、Googleマップ集客・AI活用・生き方・物語の4ジャンルに分けて紹介する案内ページ">
+<style>
+  :root{
+    --bg:#f7f2e7;
+    --surface:#ffffff;
+    --surface-2:#efe7d6;
+    --fg:#241f2e;
+    --fg-muted:#6b6457;
+    --accent:#2f4b8f;
+    --accent-ink:#ffffff;
+    --warm:#d98a2b;
+    --warm-soft:#f3dfb8;
+    --line:#e4d9c3;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1a1620;
+      --surface:#241f2e;
+      --surface-2:#2d2638;
+      --fg:#f3ece0;
+      --fg-muted:#b2a99a;
+      --accent:#7d9bff;
+      --accent-ink:#141225;
+      --warm:#f0b65c;
+      --warm-soft:#4a3b23;
+      --line:#3a3346;
+      color-scheme:dark;
+    }
+  }
+
+  * { box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--fg);
+    font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;
+    padding-inline:20px;
+    padding-block:28px;
+  }
+  h1,h2,h3{ font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Zen Kaku Gothic New",sans-serif; text-wrap:balance; margin:0; }
+  a{ color:inherit; }
+  img{ max-width:100%; }
+  .wrap{ max-width:980px; margin-inline:auto; }
+
+  /* hero */
+  .hero{
+    display:flex; flex-direction:column; gap:14px;
+    padding:36px clamp(20px,5vw,48px);
+    background:linear-gradient(135deg,var(--surface-2),var(--surface));
+    border:1px solid var(--line);
+    border-radius:28px;
+    margin-bottom:28px;
+  }
+  .hero .eyebrow{
+    font-size:.8rem; letter-spacing:.14em; font-weight:700; color:var(--warm);
+    text-transform:uppercase;
+  }
+  .hero h1{ font-size:clamp(1.9rem,5vw,2.6rem); font-weight:900; }
+  .hero p{ max-width:60ch; line-height:1.9; color:var(--fg-muted); font-size:.98rem; }
+  .hero-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
+  .store-link{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--accent); color:var(--accent-ink);
+    padding:12px 20px; border-radius:999px; font-weight:700; font-size:.92rem;
+    text-decoration:none;
+  }
+  .store-link:hover{ filter:brightness(1.08); }
+
+  /* category nav */
+  .catnav{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-bottom:34px;
+  }
+  .catnav a{
+    font-size:.85rem; font-weight:700; text-decoration:none;
+    padding:8px 16px; border-radius:999px;
+    background:var(--surface); border:1px solid var(--line); color:var(--fg-muted);
+  }
+
+  /* shelf */
+  .shelf{ margin-bottom:46px; scroll-margin-top:16px; }
+  .shelf-head{
+    display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+    border-bottom:2px solid var(--line);
+    padding-bottom:10px; margin-bottom:18px;
+  }
+  .shelf-head h2{ font-size:1.3rem; font-weight:700; }
+  .shelf-head .count{ font-size:.82rem; color:var(--fg-muted); }
+  .shelf-note{ font-size:.86rem; color:var(--fg-muted); margin:-10px 0 18px; line-height:1.7; max-width:64ch; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(188px,1fr));
+    gap:18px;
+  }
+
+  .card{
+    display:flex; flex-direction:column;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    min-width:0;
+  }
+  .cover{
+    aspect-ratio:2/3;
+    background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center;
+    padding:10px;
+  }
+  .cover img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:4px; }
+
+  .card-body{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .card-title{ font-size:.95rem; font-weight:700; line-height:1.45; }
+  .card-author{ font-size:.78rem; color:var(--fg-muted); }
+  .card-desc{ font-size:.8rem; color:var(--fg-muted); line-height:1.7; flex:1; }
+
+  .meta-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .price{ font-size:.82rem; font-weight:700; font-variant-numeric:tabular-nums; }
+  .badge{
+    font-size:.68rem; font-weight:700; padding:3px 9px; border-radius:999px;
+    background:var(--warm-soft); color:var(--warm);
+    white-space:nowrap;
+  }
+
+  .buy{
+    margin-top:4px;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    font-size:.82rem; font-weight:700; text-decoration:none;
+    padding:9px 0; border-radius:10px;
+    border:1.5px solid var(--accent); color:var(--accent);
+  }
+  .buy:hover{ background:var(--accent); color:var(--accent-ink); }
+
+  footer{
+    text-align:center; padding-top:20px; margin-top:10px;
+    border-top:1px solid var(--line);
+    font-size:.82rem; color:var(--fg-muted); line-height:1.9;
+  }
+
+  @media (max-width:420px){
+    .grid{ grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:12px; }
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">FNP出版 既刊ライブラリ</div>
+    <h1>マンガと図解で、むずかしいことをやさしく。</h1>
+    <p>
+      地域の店舗や中小企業のマーケティングに伴走しながら、経営とAI技術を掛け合わせた視点で一冊一冊を作っています。
+      Googleマップ集客からAI活用術、生き方のエッセイまで、ジャンルを横断しながら「現場で続けられる一冊」を届けています。
+    </p>
+    <div class="hero-row">
+      <a class="store-link" href="https://www.amazon.co.jp/stores/author/B0FD78XQB2" target="_blank" rel="noopener">Amazonの著者ページを見る →</a>
+    </div>
+  </section>
+
+  <nav class="catnav">
+    <a href="#meo">Googleマップ集客・MEO</a>
+    <a href="#ai">AI活用・仕事術</a>
+    <a href="#life">生き方・自己理解</a>
+    <a href="#story">物語・教養</a>
+  </nav>
+
+  <section class="shelf" id="meo">
+    <div class="shelf-head">
+      <h2>Googleマップ集客・MEO</h2>
+      <span class="count">3冊</span>
+    </div>
+    <p class="shelf-note">広告費をかけずに「選ばれる店舗」になるための、Googleビジネスプロフィール運用シリーズ。</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0H44YQPR4.jpg" alt="ホットペッパー依存から抜け出す 美容室Googleマップ集客 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">ホットペッパー依存から抜け出す 美容室Googleマップ集客</div>
+          <div class="card-author">FNP出版</div>
+          <div class="card-desc">マンガ・図解で学ぶ、美容室のためのGoogleマップ集客実践ガイド。巻末にGBP運用プロンプト集を収録。</div>
+          <div class="meta-row"><span class="price">¥490</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0H44YQPR4" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0H2MY78FH.jpg" alt="マンガ・図解でわかる Googleマップ集客入門 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">マンガ・図解でわかる Googleマップ集客入門</div>
+          <div class="card-author">FNPマーケティング</div>
+          <div class="card-desc">飲食店・美容室・整体院など、あらゆる店舗オーナー向けのMEO入門書。</div>
+          <div class="meta-row"><span class="price">¥498</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0H2MY78FH" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0F4VL2GJX.jpg" alt="検索される店だけが生き残る戦略的Googleマップ集客 完全ガイド の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">検索される店だけが生き残る戦略的Googleマップ集客 完全ガイド</div>
+          <div class="card-author">FNPマーケティング、FNP出版</div>
+          <div class="card-desc">基礎知識から業種別戦略、最新トレンドまでを網羅した本格ガイド。</div>
+          <div class="meta-row"><span class="price">¥1,250</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0F4VL2GJX" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="shelf" id="ai">
+    <div class="shelf-head">
+      <h2>AI活用・仕事術</h2>
+      <span class="count">4冊</span>
+    </div>
+    <p class="shelf-note">ChatGPTをはじめとした生成AIを、日々の仕事や副業にどう落とし込むかをマンガと実践ガイドで解説。</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0GZVJPM33.jpg" alt="マンガでわかる AI仕事術 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">マンガでわかる AI仕事術</div>
+          <div class="card-author">FNP出版</div>
+          <div class="card-desc">残業に悩む女性会社員とAIアシスタントの物語で学ぶ、ChatGPT実践ガイド。</div>
+          <div class="meta-row"><span class="price">¥99</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0GZVJPM33" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0H2W1HW4Q.jpg" alt="マンガでわかるAI副業入門 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">マンガでわかるAI副業入門</div>
+          <div class="card-author">FNP出版</div>
+          <div class="card-desc">ChatGPTで月5万円を目指す、副業ゼロからの最短ルート。</div>
+          <div class="meta-row"><span class="price">¥99</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0H2W1HW4Q" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0FHYTD8R1.jpg" alt="ChatGPTビジネス超活用術 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">ChatGPTビジネス超活用術</div>
+          <div class="card-author">田川直輝、FNP出版</div>
+          <div class="card-desc">プロンプト設計に特化した、認定プロンプトエンジニアによる実践ガイド。</div>
+          <div class="meta-row"><span class="price">¥980</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0FHYTD8R1" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0FD6TX58T.jpg" alt="深層学習と生成AI の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">深層学習と生成AI</div>
+          <div class="card-author">FNP出版、田川直輝</div>
+          <div class="card-desc">MBA視点で読み解く、生成AIとディープラーニングの技術と経営戦略。</div>
+          <div class="meta-row"><span class="price">¥99</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0FD6TX58T" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="shelf" id="life">
+    <div class="shelf-head">
+      <h2>生き方・自己理解</h2>
+      <span class="count">2冊</span>
+    </div>
+    <p class="shelf-note">自分の気質や価値観と向き合い、無理のない形で生き方を整えるための実践書。</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0GXX6HCYK.jpg" alt="繊細な人の疲れは腸から来ていた の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">繊細な人の疲れは腸から来ていた</div>
+          <div class="card-author">宮本さやか、FNP出版</div>
+          <div class="card-desc">HSPと腸の関係を科学的に解説する、繊細さんのための腸活メンタル習慣。</div>
+          <div class="meta-row"><span class="price">¥480</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0GXX6HCYK" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0FS7Q6HQV.jpg" alt="「本当の自分を生きる」価値観と強みで描く人生設計 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">「本当の自分を生きる」価値観と強みで描く人生設計</div>
+          <div class="card-author">あすとろ、FNP出版</div>
+          <div class="card-desc">価値観と強みを掛け合わせ、自分軸の人生を設計するための実践ワーク。</div>
+          <div class="meta-row"><span class="price">¥99</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0FS7Q6HQV" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="shelf" id="story">
+    <div class="shelf-head">
+      <h2>物語・教養</h2>
+      <span class="count">3冊</span>
+    </div>
+    <p class="shelf-note">実用書とは異なる筆致で、社会や歴史、やさしい物語を描くタイトル群。</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0DBVJRFFL.jpg" alt="2030年、日本崩壊のシナリオ の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">2030年、日本崩壊のシナリオ：私たちに未来はあるのか？</div>
+          <div class="card-author">FNP出版</div>
+          <div class="card-desc">地政学・経済・AIによる複合危機を見据え、そこから希望をつかむための戦略を描く。</div>
+          <div class="meta-row"><span class="price">¥880</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0DBVJRFFL" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0H6FNYCZ2.jpg" alt="天才たちが恋した国・ニッポン の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">天才たちが恋した国・ニッポン</div>
+          <div class="card-author">葉山凛、FNP出版</div>
+          <div class="card-desc">アインシュタインやチャップリンなど、世界の偉人が日本で残した感動の足跡を辿る一冊。</div>
+          <div class="meta-row"><span class="price">¥980</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0H6FNYCZ2" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="cover"><img src="covers/B0H37KH4N4.jpg" alt="雨音ひより: 夜の忘れ物語 の表紙" loading="lazy"></div>
+        <div class="card-body">
+          <div class="card-title">雨音ひより: 夜の忘れ物語</div>
+          <div class="card-author">ゆめのあまね、FNP出版</div>
+          <div class="card-desc">雨の夜だけ現れる少女が、人が忘れてしまった気持ちを拾い集める、六つの物語。</div>
+          <div class="meta-row"><span class="price">¥480</span><span class="badge">Kindle Unlimited対象</span></div>
+          <a class="buy" href="https://www.amazon.co.jp/dp/B0H37KH4N4" target="_blank" rel="noopener">Amazonで見る →</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer>
+    価格・Kindle Unlimited対象状況は変更される場合があります。最新情報は各商品ページをご確認ください。<br>
+    FNP出版 Amazon著者ページ: <a href="https://www.amazon.co.jp/stores/author/B0FD78XQB2" target="_blank" rel="noopener">amazon.co.jp/stores/author/B0FD78XQB2</a>
+  </footer>
+
+</div>
+</body>
+</html>
